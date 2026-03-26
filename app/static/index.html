@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>QR Code Generator</h1>
+      <p>High-resolution QR codes &mdash; nothing stored, nothing tracked</p>
+    </header>
+
+    <div class="layout">
+
+      <!-- Left: form panel -->
+      <div class="panel left-panel">
+
+        <div class="section-label">QR Code Type</div>
+        <div id="type-tabs" class="type-tabs"></div>
+
+        <div id="qr-form" class="qr-form"></div>
+
+        <div class="divider"></div>
+
+        <div class="section-label">Customize</div>
+        <div class="customize-grid">
+          <div class="field-group">
+            <label for="fg-color">Foreground</label>
+            <input type="color" id="fg-color" value="#000000">
+          </div>
+          <div class="field-group">
+            <label for="bg-color">Background</label>
+            <input type="color" id="bg-color" value="#ffffff">
+          </div>
+          <div class="field-group">
+            <label for="ec-level">Error Correction</label>
+            <select id="ec-level">
+              <option value="L">Low (7%) &mdash; smaller file</option>
+              <option value="M">Medium (15%)</option>
+              <option value="Q">Quartile (25%)</option>
+              <option value="H" selected>High (30%) &mdash; logo-safe</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="filename">Filename</label>
+            <input type="text" id="filename" value="qrcode" placeholder="qrcode" maxlength="64">
+          </div>
+        </div>
+
+        <div id="form-error" class="form-error" hidden></div>
+
+        <button id="download-btn" class="btn-primary" disabled>
+          Download ZIP (3 PNG + SVG)
+        </button>
+      </div>
+
+      <!-- Right: preview panel -->
+      <div class="panel right-panel">
+        <div class="section-label">Preview</div>
+        <div class="preview-box" id="preview-box">
+          <div class="preview-placeholder" id="preview-placeholder">
+            Fill in the form<br>to see a preview
+          </div>
+          <img id="preview-img" alt="QR Code Preview" hidden>
+        </div>
+        <div class="output-info">
+          <div class="section-label" style="margin-top:1.25rem">Output files</div>
+          <ul>
+            <li><span class="tag">PNG</span> <code>_web</code> &mdash; ~300 px, optimized for screen</li>
+            <li><span class="tag">PNG</span> <code>_print</code> &mdash; ~600 px, standard print</li>
+            <li><span class="tag">PNG</span> <code>_hires</code> &mdash; ~1200 px, large format</li>
+            <li><span class="tag tag-svg">SVG</span> vector, infinitely scalable</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

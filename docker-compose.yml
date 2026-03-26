@@ -1,0 +1,12 @@
+services:
+  qr-webgen:
+    build: .
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
