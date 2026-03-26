@@ -50,6 +50,37 @@
           </div>
         </div>
 
+        <div class="divider"></div>
+
+        <div class="logo-section-label">
+          <div class="section-label" style="margin-bottom:0">Logo Overlay</div>
+          <span class="optional-badge">optional</span>
+        </div>
+
+        <div class="logo-drop" id="logo-drop">
+          <input type="file" id="logo-file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" hidden>
+          <div id="logo-empty">
+            <div class="logo-drop-icon">📄</div>
+            <p>Drop image here or <button type="button" id="logo-browse">browse</button></p>
+            <small>Transparent PNG recommended &mdash; keep under 35% of QR size</small>
+          </div>
+          <div id="logo-loaded" hidden>
+            <img id="logo-thumb" alt="Logo preview">
+            <div class="logo-loaded-info">
+              <span id="logo-name"></span>
+              <button type="button" id="logo-remove">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="logo-size-wrap" hidden>
+          <div class="field-group" style="margin-top:.625rem">
+            <label for="logo-size">Logo size &mdash; <strong id="logo-size-val">25</strong>%</label>
+            <input type="range" id="logo-size" min="10" max="35" value="25" step="1">
+          </div>
+          <p class="field-hint" style="margin-top:.25rem">High error correction is recommended when using a logo</p>
+        </div>
+
         <div id="form-error" class="form-error" hidden></div>
 
         <button id="download-btn" class="btn-primary" disabled>

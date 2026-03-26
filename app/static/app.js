@@ -283,6 +283,7 @@ function validateFields(typeId) {
 
 let currentType = 'url';
 let previewTimer = null;
+let logoFile = null;
 
 // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -322,6 +323,86 @@ function selectType(typeId) {
   hideError();
 }
 
+// ── Logo upload ────────────────────────────────────────────────────────────
+
+function initLogoUpload() {
+  const dropZone  = document.getElementById('logo-drop');
+  const fileInput = document.getElementById('logo-file');
+
+  document.getElementById('logo-browse').addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  dropZone.addEventListener('click', () => {
+    if (!logoFile) fileInput.click();
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) setLogo(fileInput.files[0]);
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('drag-over');
+  });
+
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) setLogo(file);
+  });
+
+  document.getElementById('logo-remove').addEventListener('click', (e) => {
+    e.stopPropagation();
+    clearLogo();
+  });
+
+  document.getElementById('logo-size').addEventListener('input', () => {
+    document.getElementById('logo-size-val').textContent =
+      document.getElementById('logo-size').value;
+    schedulePreview();
+  });
+}
+
+function setLogo(file) {
+  logoFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => { document.getElementById('logo-thumb').src = e.target.result; };
+  reader.readAsDataURL(file);
+  document.getElementById('logo-name').textContent = file.name;
+  document.getElementById('logo-empty').hidden = true;
+  document.getElementById('logo-loaded').hidden = false;
+  document.getElementById('logo-size-wrap').hidden = false;
+  schedulePreview();
+}
+
+function clearLogo() {
+  logoFile = null;
+  document.getElementById('logo-file').value = '';
+  document.getElementById('logo-empty').hidden = false;
+  document.getElementById('logo-loaded').hidden = true;
+  document.getElementById('logo-size-wrap').hidden = true;
+  schedulePreview();
+}
+
+// ── FormData builder ───────────────────────────────────────────────────────
+
+function buildFormData(qrData, extra = {}) {
+  const fd = new FormData();
+  fd.append('data', qrData);
+  fd.append('fg_color', document.getElementById('fg-color').value);
+  fd.append('bg_color', document.getElementById('bg-color').value);
+  fd.append('error_correction', document.getElementById('ec-level').value);
+  fd.append('logo_size_pct', (document.getElementById('logo-size').value / 100).toFixed(2));
+  if (logoFile) fd.append('logo', logoFile);
+  Object.entries(extra).forEach(([k, v]) => fd.append(k, v));
+  return fd;
+}
+
 // ── Preview ────────────────────────────────────────────────────────────────
 
 function schedulePreview() {
@@ -342,18 +423,10 @@ async function updatePreview() {
   const qrData = formatQRData(currentType, fields);
   if (!qrData.trim()) { clearPreview(); return; }
 
-  const payload = {
-    data: qrData,
-    fg_color: document.getElementById('fg-color').value,
-    bg_color: document.getElementById('bg-color').value,
-    error_correction: document.getElementById('ec-level').value,
-  };
-
   try {
     const res = await fetch('/preview', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: buildFormData(qrData),
     });
     const json = await res.json();
     if (!res.ok) { clearPreview(); return; }
@@ -383,14 +456,6 @@ async function downloadZip() {
 
   const filename = (document.getElementById('filename').value.trim() || 'qrcode');
 
-  const payload = {
-    data: qrData,
-    fg_color: document.getElementById('fg-color').value,
-    bg_color: document.getElementById('bg-color').value,
-    error_correction: document.getElementById('ec-level').value,
-    filename,
-  };
-
   const btn = document.getElementById('download-btn');
   btn.disabled = true;
   btn.textContent = 'Generating…';
@@ -398,8 +463,7 @@ async function downloadZip() {
   try {
     const res = await fetch('/generate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: buildFormData(qrData, { filename }),
     });
 
     if (!res.ok) {
@@ -440,6 +504,7 @@ function hideError() {
 document.addEventListener('DOMContentLoaded', () => {
   renderTabs();
   renderForm(currentType);
+  initLogoUpload();
 
   document.getElementById('download-btn').addEventListener('click', downloadZip);
 
