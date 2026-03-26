@@ -7,18 +7,43 @@ A self-hosted web application that generates high-resolution QR codes and packag
 - **9 QR code types** — URL, Contact (vCard), Wi-Fi, Payment, App Download, Location, Calendar Event, TOTP Authentication, Plain Text
 - **3 PNG resolutions** — web (~300 px), print (~600 px), hi-res (~1200 px)
 - **Scalable SVG** — vector output for unlimited scaling
+- **Logo overlay** — embed an image in the center of the QR code (PNG/JPG/WebP/SVG)
 - **Custom colors** — choose foreground and background colors
 - **Error correction** — L / M / Q / H (High recommended for logo overlays)
 - **Live preview** — see the QR code update as you type
 - **Privacy-first** — zero storage, zero logging, runs entirely in Docker
 
-## Quick Start
+## Running with Docker
+
+### Option 1 — docker compose (recommended)
 
 ```bash
+git clone git@github.com:juancasa/qr-webgen.git
+cd qr-webgen
 docker compose up --build
 ```
 
+### Option 2 — build and run manually
+
+```bash
+docker build -t jcasanas/qr-webgen .
+docker run -p 5000:5000 jcasanas/qr-webgen
+```
+
 Open [http://localhost:5000](http://localhost:5000).
+
+**Useful run flags:**
+
+```bash
+# Run in the background
+docker run -d -p 5000:5000 --name qr-webgen jcasanas/qr-webgen
+
+# View logs
+docker logs qr-webgen
+
+# Stop and remove
+docker stop qr-webgen && docker rm qr-webgen
+```
 
 ## Supported QR Code Types
 
@@ -44,6 +69,14 @@ qrcode_print.png  — standard print quality
 qrcode_hires.png  — large-format / high-DPI print
 qrcode.svg        — infinitely scalable vector
 ```
+
+## Logo Overlay
+
+Upload any PNG, JPG, GIF, WebP, or SVG image to embed it centered on the QR code. The logo is applied to all three PNG sizes and embedded as a `<image>` element in the SVG.
+
+- Use a **transparent PNG** for best results
+- Keep the logo under **35%** of the QR area to preserve scannability
+- **High error correction** is recommended — it allows up to 30% of the code to be obscured
 
 ## Tech Stack
 
@@ -83,18 +116,20 @@ qr-webgen/
 
 ## API Endpoints
 
+Both endpoints accept `multipart/form-data`.
+
 ### `POST /preview`
 
 Returns a base64-encoded PNG for live UI preview.
 
-```json
-{
-  "data": "<formatted QR string>",
-  "fg_color": "#000000",
-  "bg_color": "#ffffff",
-  "error_correction": "H"
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | string | Formatted QR content |
+| `fg_color` | string | Foreground hex color (default `#000000`) |
+| `bg_color` | string | Background hex color (default `#ffffff`) |
+| `error_correction` | string | `L` / `M` / `Q` / `H` (default `H`) |
+| `logo` | file | Optional image to overlay |
+| `logo_size_pct` | float | Logo size as fraction of QR side (default `0.25`) |
 
 Response: `{ "image": "data:image/png;base64,..." }`
 
@@ -102,15 +137,15 @@ Response: `{ "image": "data:image/png;base64,..." }`
 
 Returns a ZIP file containing the three PNG sizes and the SVG.
 
-```json
-{
-  "data": "<formatted QR string>",
-  "fg_color": "#000000",
-  "bg_color": "#ffffff",
-  "error_correction": "H",
-  "filename": "qrcode"
-}
-```
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | string | Formatted QR content |
+| `fg_color` | string | Foreground hex color |
+| `bg_color` | string | Background hex color |
+| `error_correction` | string | `L` / `M` / `Q` / `H` |
+| `filename` | string | Base name for output files (default `qrcode`) |
+| `logo` | file | Optional image to overlay |
+| `logo_size_pct` | float | Logo size as fraction of QR side |
 
 Response: `application/zip`
 
